@@ -266,7 +266,7 @@ function renderKeranjang() {
   container.innerHTML = html;
 }
 
-// --- FUNGSI PAKET HADIAH (OTOMATIS KOMBINASI MULTI-BARANG) ---
+// --- FUNGSI PAKET HADIAH (OTOMATIS, VARIATIF, TANPA DOUBLE ITEM) ---
 function simpanPaket() {
   const namaPaketInput = document.getElementById('input-nama-paket');
   const budgetInput = document.getElementById('input-budget');
@@ -282,45 +282,37 @@ function simpanPaket() {
   if(jumlahKantong <= 0) return showToast('Jumlah kantong minimal 1!', true);
   if(state.items.length === 0) return showToast('Belum ada barang di keranjang/stok!', true);
 
-  // Filter barang yang stoknya mencukupi untuk total kantong
+  // Filter barang yang stoknya mencukupi untuk seluruh kantong
   let kandidatBarang = state.items.filter(item => item.stok >= jumlahKantong);
 
   if(kandidatBarang.length === 0) {
     return showToast('Tidak ada barang dengan stok yang mencukupi untuk jumlah kantong tersebut!', true);
   }
 
-  // Acak atau urutkan kandidat barang agar kombinasi lebih bervariasi (diurutkan dari harga termurah)
+  // Acak atau urutkan kandidat dari harga termurah
   kandidatBarang.sort((a, b) => a.hargaPcs - b.hargaPcs);
 
   let barangTerpilihList = [];
   let totalModalPerPaket = 0;
 
-  // Algoritma kombinasi multi-barang: looping untuk memasukkan berbagai jenis barang berbeda
+  // Looping untuk menggabungkan berbagai jenis barang BERBEDA (1 pcs per jenis per kantong)
   for (let item of kandidatBarang) {
-    // Cek apakah sisa budget masih cukup untuk memasukkan minimal 1 pcs barang ini per kantong
-    if (totalModalPerPaket + item.hargaPcs <= targetBudget) {
-      let qtyPerKantong = 1;
-
-      // Jika masih jauh dari budget, coba tambahkan lagi kuantitas barang yang sama (maksimal 3 pcs per jenis)
-      while (
-        totalModalPerPaket + (item.hargaPcs * (qtyPerKantong + 1)) <= targetBudget &&
-        item.stok >= (qtyPerKantong + 1) * jumlahKantong &&
-        qtyPerKantong < 3
-      ) {
-        qtyPerKantong++;
-      }
-
-      barangTerpilihList.push({ id: item.id, qty: qtyPerKantong });
-      totalModalPerPaket += (item.hargaPcs * qtyPerKantong);
+    // Pastikan jenis barang ini belum ada di dalam paket (mencegah double item)
+    let sudahAda = barangTerpilihList.some(pi => pi.id === item.id);
+    
+    if (!sudahAda && (totalModalPerPaket + item.hargaPcs <= targetBudget * 1.15)) {
+      // Masukkan tepat 1 pcs untuk jenis barang ini agar bervariasi
+      barangTerpilihList.push({ id: item.id, qty: 1 });
+      totalModalPerPaket += item.hargaPcs;
     }
 
-    // Jika total modal sudah mencapai minimal 85% dari target budget, hentikan pencarian agar pas
+    // Jika total modal sudah mendekati atau mencapai target budget (minimal 85%), hentikan
     if (totalModalPerPaket >= targetBudget * 0.85) {
       break;
     }
   }
 
-  // Jika ternyata budget terlalu kecil untuk barang apa pun, ambil 1 barang termurah sebagai fallback
+  // Fallback jika sama sekali tidak terpilih
   if (barangTerpilihList.length === 0) {
     barangTerpilihList.push({ id: kandidatBarang[0].id, qty: 1 });
   }
@@ -339,7 +331,7 @@ function simpanPaket() {
     return showToast('Stok barang tidak mencukupi untuk kombinasi paket ini!', true);
   }
 
-  // Eksekusi pemotongan stok di keranjang & gudang
+  // Eksekusi pemotongan stok
   barangTerpilihList.forEach(pi => {
     let totalDibutuhkan = pi.qty * jumlahKantong;
     let itemKeranjang = state.items.find(i => i.id === pi.id);
@@ -367,7 +359,7 @@ function simpanPaket() {
 
   saveData();
   refreshAllUI();
-  showToast('Paket kombinasi berhasil dibuat otomatis!');
+  showToast('Paket bervariasi (tanpa double item) berhasil dibuat!');
   switchTab(2);
 }
 
