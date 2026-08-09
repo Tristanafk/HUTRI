@@ -266,7 +266,7 @@ function renderKeranjang() {
   container.innerHTML = html;
 }
 
-// --- FUNGSI PAKET HADIAH (OTOMATIS) ---
+// --- FUNGSI PAKET HADIAH (OTOMATIS KOMBINASI BANYAK BARANG) ---
 function simpanPaket() {
   const namaPaketInput = document.getElementById('input-nama-paket');
   const budgetInput = document.getElementById('input-budget');
@@ -282,41 +282,82 @@ function simpanPaket() {
   if(jumlahKantong <= 0) return showToast('Jumlah kantong minimal 1!', true);
   if(state.items.length === 0) return showToast('Belum ada barang di keranjang/stok!', true);
 
-  // Filter barang yang stoknya mencukupi untuk seluruh kantong
-  // Aturan: Satu paket satu macam barang -> 1 pcs barang tersebut per kantong
+  // Filter barang yang stoknya mencukupi untuk total kantong yang akan dibuat
   let kandidatBarang = state.items.filter(item => item.stok >= jumlahKantong);
 
   if(kandidatBarang.length === 0) {
     return showToast('Tidak ada barang dengan stok yang mencukupi untuk jumlah kantong tersebut!', true);
   }
 
-  // Cari barang yang harganya paling mendekati target budget (bisa di bawah atau paling mendekati)
-  // Urutkan berdasarkan selisih terdekat dengan target budget
-  kandidatBarang.sort((a, b) => {
-    let selisihA = Math.abs(a.hargaPcs - targetBudget);
-    let selisihB = Math.abs(b.hargaPcs - targetBudget);
-    return selisihA - selisihB;
-  });
+  // Algoritma otomatis menggabungkan beberapa barang (kombinasi) mendekati target budget
+  // Urutkan barang dari yang termurah ke termahal
+  kandidatBarang.sort((a, b) => a.hargaPcs - b.hargaPcs);
 
-  const barangTerpilih = kandidatBarang[0];
-  const totalDibutuhkan = jumlahKantong; // karena 1 item per kantong
+  let barangTerpilihList = [];
+  let totalModalTerpilih = 0;
 
-  // Kurangi stok barang secara otomatis
-  barangTerpilih.stok -= totalDibutuhkan;
-  const itemGudang = state.gudang.find(g => g.nama.toLowerCase() === barangTerpilih.nama.toLowerCase());
-  if(itemGudang) {
-    itemGudang.stok -= totalDibutuhkan;
+  // Pilih barang secara greedy/kombinasi agar mendekati target budget tanpa melebihi jauh
+  for (let item of kandidatBarang) {
+    // Cek apakah memasukkan 1 pcs barang ini masih di bawah atau mendekati budget
+    if (totalModalTerpilih + item.hargaPcs <= targetBudget * 1.15) { // Toleransi kelebihan 15% maksimal
+      // Tentukan berapa pcs barang ini per kantong (misal 1 atau 2 pcs per jenis)
+      let qtyPerKantong = 1;
+      
+      // Jika selisih masih jauh dan stok aman, bisa ambil lebih dari 1 pcs untuk jenis yang sama
+      while (
+        totalModalTerpilih + item.hargaPcs <= targetBudget && 
+        item.stok >= (qtyPerKantong + 1) * jumlahKantong &&
+        qtyPerKantong < 3 // Batasi max 3 pcs per jenis barang agar bervariasi
+      ) {
+        qtyPerKantong++;
+      }
+
+      barangTerpilihList.push({ id: item.id, qty: qtyPerKantong });
+      totalModalTerpilih += (item.hargaPcs * qtyPerKantong);
+    }
+
+    // Jika sudah mendekati target budget (minimal 85% dari target), hentikan pencarian
+    if (totalModalTerpilih >= targetBudget * 0.85) {
+      break;
+    }
   }
 
-  // Simpan paket baru dengan format isi otomatis
+  // Fallback pengaman: jika loop di atas kosong, ambil minimal 1 barang termurah
+  if (barangTerpilihList.length === 0) {
+    barangTerpilihList.push({ id: kandidatBarang[0].id, qty: 1 });
+  }
+
+  // Validasi ulang ketersediaan stok & potong stok otomatis
+  let errorStok = false;
+  barangTerpilihList.forEach(pi => {
+    let itemRef = state.items.find(i => i.id === pi.id);
+    let totalDibutuhkan = pi.qty * jumlahKantong;
+    if (!itemRef || itemRef.stok < totalDibutuhkan) {
+      errorStok = true;
+    }
+  });
+
+  if (errorStok) {
+    return showToast('Stok barang tidak mencukupi untuk kombinasi paket ini!', true);
+  }
+
+  // Eksekusi pemotongan stok
+  barangTerpilihList.forEach(pi => {
+    let totalDibutuhkan = pi.qty * jumlahKantong;
+    let itemKeranjang = state.items.find(i => i.id === pi.id);
+    if(itemKeranjang) itemKeranjang.stok -= totalDibutuhkan;
+
+    let itemGudang = state.gudang.find(g => g.nama.toLowerCase() === itemKeranjang.nama.toLowerCase());
+    if(itemGudang) itemGudang.stok -= totalDibutuhkan;
+  });
+
+  // Simpan paket baru
   const newPackage = {
     id: Date.now(),
     nama: nama,
     budget: targetBudget,
     jumlahKantong: jumlahKantong,
-    items: [
-      { id: barangTerpilih.id, qty: 1 }
-    ]
+    items: barangTerpilihList
   };
 
   state.packages.push(newPackage);
@@ -324,11 +365,11 @@ function simpanPaket() {
   // Reset form
   namaPaketInput.value = '';
   budgetInput.value = '';
-  jumlahPaketInput.value = '1';
+  jumlahKantongInput.value = '1';
 
   saveData();
   refreshAllUI();
-  showToast(`Paket berhasil dibuat dengan isi: ${barangTerpilih.nama}!`);
+  showToast('Paket berisi kombinasi barang berhasil dibuat otomatis!');
   switchTab(2);
 }
 
