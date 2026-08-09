@@ -137,7 +137,6 @@ function tambahBarang() {
     hargaPcs = harga;
     modalBeli = harga * qty;
     
-    // Reset input
     document.getElementById('input-harga-pcs').value = '';
     document.getElementById('input-qty-pcs').value = '';
   } else {
@@ -149,13 +148,11 @@ function tambahBarang() {
     hargaPcs = hargaPak / isiPak;
     modalBeli = hargaPak * qtyPak;
     
-    // Reset input
     document.getElementById('input-harga-pak').value = '';
     document.getElementById('input-isi-pak').value = '';
     document.getElementById('input-qty-pak').value = '';
   }
 
-  // Masuk ke Gudang (Daftar Belanja Global) & Keranjang Siap Diracik secara sinkron
   const existingGudang = state.gudang.find(i => i.nama.toLowerCase() === nama.toLowerCase());
   if(existingGudang) { 
     existingGudang.stok += totalStok; 
@@ -187,22 +184,6 @@ function hapusGudang(id) {
   saveData();
   refreshAllUI();
   showToast('Barang dihapus.');
-}
-
-function pindahKeKeranjang(id) {
-  const target = state.gudang.find(i => i.id === id);
-  if(!target) return;
-  
-  // Cek apakah sudah ada di keranjang items
-  let itemKeranjang = state.items.find(i => i.nama.toLowerCase() === target.nama.toLowerCase());
-  if(!itemKeranjang) {
-    state.items.push({ id: target.id, nama: target.nama, stok: target.stok, hargaPcs: target.hargaPcs });
-  } else {
-    itemKeranjang.stok = target.stok;
-  }
-  saveData();
-  refreshAllUI();
-  showToast('Stok dipindahkan ke keranjang siap racik!');
 }
 
 function renderGudang() {
@@ -401,33 +382,29 @@ function simpanPaket() {
     return showToast('Stok barang di keranjang tidak mencukupi untuk jumlah kantong tersebut!', true);
   }
 
-  // Kurangi stok barang di keranjang & gudang
+  // Kurangi stok barang secara otomatis
   state.activePackageItems.forEach(row => {
     const totalDibutuhkan = row.qty * jumlahKantong;
     const itemKeranjang = state.items.find(i => i.id === row.id);
     if(itemKeranjang) itemKeranjang.stok -= totalDibutuhkan;
 
-    const itemGudang = state.gudang.find(i => i.nama.toLowerCase() === itemKeranjang.nama.toLowerCase());
-    if(itemGudang) itemGudang.stok -= totalDibutuhkan;
+    if(itemKeranjang) {
+      const itemGudang = state.gudang.find(i => i.nama.toLowerCase() === itemKeranjang.nama.toLowerCase());
+      if(itemGudang) itemGudang.stok -= totalDibutuhkan;
+    }
   });
 
-  // Simpan paket
-  let rincianIsi = state.activePackageItems.map(row => {
-    const itemRef = state.items.find(i => i.id === row.id);
-    return {
-      namaBarang: itemRef ? itemRef.nama : 'Barang',
-      qty: row.qty
-    };
-  });
-
-  state.packages.push({
+  // Simpan data paket baru
+  const newPackage = {
     id: Date.now(),
     nama: nama,
     budget: budget,
     jumlahKantong: jumlahKantong,
-    rincian: rincianIsi
-  });
+    items: [...state.activePackageItems]
+  };
 
+  state.packages.push(newPackage);
+  
   // Reset form paket
   namaPaketInput.value = '';
   budgetInput.value = '';
@@ -436,26 +413,28 @@ function simpanPaket() {
 
   saveData();
   refreshAllUI();
-  showToast('Paket hadiah berhasil disimpan & stok disesuaikan!');
-  switchTab(2); // Tetap di tab paket atau refresh tampilan
+  showToast('Paket berhasil disimpan & stok otomatis terpotong!');
+  switchTab(2);
 }
 
 function hapusPaket(id) {
-  const p = state.packages.find(pkg => pkg.id === id);
-  if(p) {
-    // Kembalikan stok
-    p.rincian.forEach(r => {
-      const itemGudang = state.gudang.find(i => i.nama.toLowerCase() === r.namaBarang.toLowerCase());
-      if(itemGudang) itemGudang.stok += (r.qty * p.jumlahKantong);
-
-      const itemKeranjang = state.items.find(i => i.nama.toLowerCase() === r.namaBarang.toLowerCase());
-      if(itemKeranjang) itemKeranjang.stok += (r.qty * p.jumlahKantong);
+  const index = state.packages.findIndex(p => p.id === id);
+  if(index !== -1) {
+    const pkg = state.packages[index];
+    pkg.items.forEach(pi => {
+      const itemRef = state.items.find(i => i.id === pi.id);
+      if(itemRef) {
+        itemRef.stok += (pi.qty * pkg.jumlahKantong);
+        const itemGudang = state.gudang.find(g => g.nama.toLowerCase() === itemRef.nama.toLowerCase());
+        if(itemGudang) itemGudang.stok += (pi.qty * pkg.jumlahKantong);
+      }
     });
-    state.packages = state.packages.filter(pkg => pkg.id !== id);
+
+    state.packages.splice(index, 1);
+    saveData();
+    refreshAllUI();
+    showToast('Paket dihapus dan stok dikembalikan.');
   }
-  saveData();
-  refreshAllUI();
-  showToast('Paket dihapus & stok dikembalikan.');
 }
 
 function renderPaket() {
@@ -465,7 +444,7 @@ function renderPaket() {
 
   if(state.packages.length === 0) {
     container.innerHTML = `
-      <div class="card p-8 text-center text-slate-400 text-sm" id="empty-paket">
+      <div class="card p-8 text-center text-slate-400 text-sm">
         <i data-lucide="gift" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
         <div>Belum ada paket</div>
         <div class="text-xs mt-1">Racik paket di form atas</div>
@@ -480,22 +459,37 @@ function renderPaket() {
   }
 
   let html = '';
-  state.packages.forEach(p => {
-    let rincianStr = p.rincian.map(r => `${r.qty}x ${r.namaBarang}`).join(', ');
+  state.packages.forEach(pkg => {
+    let rincianItems = '';
+    let totalModalPerPaket = 0;
+
+    pkg.items.forEach(pi => {
+      const itemInfo = state.items.find(i => i.id === pi.id) || state.gudang.find(g => g.id === pi.id);
+      const namaBarang = itemInfo ? itemInfo.nama : 'Barang';
+      const hargaPcs = itemInfo ? (itemInfo.hargaPcs || (itemInfo.modal / itemInfo.stok) || 0) : 0;
+      totalModalPerPaket += (hargaPcs * pi.qty);
+      rincianItems += `<li class="text-xs text-slate-600">&bull; ${pi.qty}x ${namaBarang}</li>`;
+    });
+
     html += `
       <div class="card p-4 space-y-2">
         <div class="flex justify-between items-start">
           <div>
-            <div class="font-bold text-slate-800 text-sm">${p.nama}</div>
-            <div class="text-xs text-slate-500">Jumlah: <b class="text-merah-600">${p.jumlahKantong} Kantong</b> &bull; Budget: Rp ${p.budget.toLocaleString('id-ID')}</div>
+            <div class="font-700 text-slate-800 text-sm">${pkg.nama}</div>
+            <div class="text-xs text-slate-500">Jumlah: <b>${pkg.jumlahKantong} Kantong</b> &bull; Target Budget: Rp ${pkg.budget.toLocaleString('id-ID')}</div>
           </div>
-          <button onclick="hapusPaket(${p.id})" class="btn-danger p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          <button onclick="hapusPaket(${pkg.id})" class="btn-danger p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </div>
-        <div class="bg-slate-50 rounded-xl p-2.5 text-xs text-slate-600">
-          <b>Isi per kantong:</b> ${rincianStr}
+        <div class="bg-slate-50 p-2.5 rounded-xl space-y-1">
+          <div class="text-xs font-600 text-slate-700">Isi per Kantong:</div>
+          <ul class="pl-2 space-y-0.5">${rincianItems}</ul>
+        </div>
+        <div class="text-xs text-right text-slate-500 font-500">
+          Total Modal/Paket: <span class="text-merah-600 font-700">Rp ${Math.round(totalModalPerPaket).toLocaleString('id-ID')}</span>
         </div>
       </div>`;
   });
+
   container.innerHTML = html;
 }
 
@@ -532,7 +526,10 @@ function renderLaporan() {
     } else {
       let html = '<ul class="list-disc pl-4 space-y-1">';
       state.packages.forEach(p => {
-        let rincianStr = p.rincian.map(r => `${r.qty} ${r.namaBarang}`).join(', ');
+        let rincianStr = p.items.map(pi => {
+          const itemRef = state.items.find(i => i.id === pi.id) || state.gudang.find(g => g.id === pi.id);
+          return `${pi.qty} ${itemRef ? itemRef.nama : 'Barang'}`;
+        }).join(', ');
         html += `<li><b>${p.nama}</b> (${p.jumlahKantong} kantong) &rarr; ${rincianStr}</li>`;
       });
       html += '</ul>';
@@ -601,7 +598,10 @@ function cetakPanduanBungkus() {
 
   let tableData = [];
   state.packages.forEach((p, index) => {
-    let rincianStr = p.rincian.map(r => `- ${r.qty}x ${r.namaBarang}`).join('\n');
+    let rincianStr = p.items.map(pi => {
+      const itemRef = state.items.find(i => i.id === pi.id) || state.gudang.find(g => g.id === pi.id);
+      return `- ${pi.qty}x ${itemRef ? itemRef.nama : 'Barang'}`;
+    }).join('\n');
     tableData.push([
       index + 1,
       p.nama,
@@ -640,7 +640,9 @@ function refreshAllUI() {
   renderGudang();
   renderKeranjang();
   renderPaket();
-  renderItemSelector();
+  if(document.getElementById('panel-2')?.classList.contains('active')) {
+    renderItemSelector();
+  }
   renderLaporan();
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
