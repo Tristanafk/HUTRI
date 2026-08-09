@@ -2,8 +2,7 @@ let state = {
   currentType: 'satuan',
   gudang: JSON.parse(localStorage.getItem('17an_gudang')) || [],
   items: JSON.parse(localStorage.getItem('17an_items')) || [],
-  packages: JSON.parse(localStorage.getItem('17an_packages')) || [],
-  activePackageItems: [] // Baris item yang sedang diracik di form paket
+  packages: JSON.parse(localStorage.getItem('17an_packages')) || []
 };
 
 const CLOUD_DOC_ID = 'data_kalkulator_17an';
@@ -103,7 +102,6 @@ function switchTab(tabId) {
   if(nav) nav.classList.add('active');
   window.scrollTo(0, 0);
   
-  if(tabId === 2) renderItemSelector();
   if(tabId === 3) renderLaporan();
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -268,152 +266,69 @@ function renderKeranjang() {
   container.innerHTML = html;
 }
 
-// --- FUNGSI PAKET HADIAH ---
-function tambahBarisPaket(selectedItemId = '', qty = 1) {
-  state.activePackageItems.push({ id: selectedItemId || (state.items[0] ? state.items[0].id : ''), qty: qty });
-  renderItemSelector();
-}
-
-function hapusBarisPaket(index) {
-  state.activePackageItems.splice(index, 1);
-  renderItemSelector();
-}
-
-function renderItemSelector() {
-  const container = document.getElementById('item-selector-container');
-  if(!container) return;
-
-  if(state.items.length === 0) {
-    container.innerHTML = `<div class="text-xs text-amber-600 bg-amber-50 p-3 rounded-xl">Isi dulu daftar barang di menu Stok!</div>`;
-    return;
-  }
-
-  if(state.activePackageItems.length === 0) {
-    state.activePackageItems.push({ id: state.items[0].id, qty: 1 });
-  }
-
-  let html = '';
-  state.activePackageItems.forEach((row, idx) => {
-    let options = state.items.map(i => `<option value="${i.id}" ${i.id == row.id ? 'selected' : ''}>${i.nama} (Sisa: ${i.stok})</option>`).join('');
-    html += `
-      <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl">
-        <select onchange="updateBarisItem(${idx}, 'id', this.value)" class="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 text-xs bg-white text-slate-800">
-          ${options}
-        </select>
-        <input type="number" min="1" value="${row.qty}" onchange="updateBarisItem(${idx}, 'qty', this.value)" class="w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-xs bg-white text-slate-800 text-center" placeholder="Qty" />
-        <button onclick="hapusBarisPaket(${idx})" class="btn-danger p-2"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-      </div>`;
-  });
-
-  container.innerHTML = html;
-  hitungBudgetRealtime();
-  if(typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function updateBarisItem(index, field, value) {
-  if(field === 'id') state.activePackageItems[index].id = parseInt(value);
-  if(field === 'qty') state.activePackageItems[index].qty = parseInt(value) || 1;
-  hitungBudgetRealtime();
-}
-
-function hitungBudgetRealtime() {
-  const budgetInput = parseFloat(document.getElementById('input-budget').value) || 0;
-  const statusBox = document.getElementById('status-budget');
-  const statusText = document.getElementById('status-text');
-  const statusSelisih = document.getElementById('status-selisih');
-  const statusIcon = document.getElementById('status-icon');
-
-  if(!statusBox) return;
-
-  let totalModalPaket = 0;
-  state.activePackageItems.forEach(row => {
-    const itemRef = state.items.find(i => i.id === row.id);
-    if(itemRef) {
-      totalModalPaket += (itemRef.hargaPcs * row.qty);
-    }
-  });
-
-  if(budgetInput <= 0) {
-    statusBox.classList.add('hidden');
-    return;
-  }
-
-  statusBox.classList.remove('hidden');
-  let selisih = budgetInput - totalModalPaket;
-
-  if(selisih >= 0) {
-    statusBox.className = "rounded-xl p-3 status-ok";
-    statusText.textContent = `Modal per paket: Rp ${Math.round(totalModalPaket).toLocaleString('id-ID')}`;
-    statusSelisih.textContent = `Sisa: +Rp ${Math.round(selisih).toLocaleString('id-ID')}`;
-    if(statusIcon) statusIcon.setAttribute('data-lucide', 'check-circle');
-  } else {
-    statusBox.className = "rounded-xl p-3 status-over";
-    statusText.textContent = `Modal per paket: Rp ${Math.round(totalModalPaket).toLocaleString('id-ID')}`;
-    statusSelisih.textContent = `Minus: -Rp ${Math.round(Math.abs(selisih)).toLocaleString('id-ID')}`;
-    if(statusIcon) statusIcon.setAttribute('data-lucide', 'alert-triangle');
-  }
-  if(typeof lucide !== 'undefined') lucide.createIcons();
-}
-
+// --- FUNGSI PAKET HADIAH (OTOMATIS) ---
 function simpanPaket() {
   const namaPaketInput = document.getElementById('input-nama-paket');
   const budgetInput = document.getElementById('input-budget');
   const jumlahPaketInput = document.getElementById('input-jumlah-paket');
 
-  if(!namaPaketInput) return;
+  if(!namaPaketInput || !budgetInput || !jumlahPaketInput) return;
   const nama = namaPaketInput.value.trim();
-  const budget = parseFloat(budgetInput.value) || 0;
+  const targetBudget = parseFloat(budgetInput.value) || 0;
   const jumlahKantong = parseInt(jumlahPaketInput.value) || 1;
 
   if(!nama) return showToast('Nama kategori paket wajib diisi!', true);
-  if(state.activePackageItems.length === 0) return showToast('Tambahkan minimal 1 jenis barang ke dalam paket!', true);
+  if(targetBudget <= 0) return showToast('Target budget harus valid!', true);
+  if(jumlahKantong <= 0) return showToast('Jumlah kantong minimal 1!', true);
+  if(state.items.length === 0) return showToast('Belum ada barang di keranjang/stok!', true);
 
-  // Validasi stok cukup
-  let errorStok = false;
-  state.activePackageItems.forEach(row => {
-    const itemRef = state.items.find(i => i.id === row.id);
-    const totalDibutuhkan = row.qty * jumlahKantong;
-    if(!itemRef || itemRef.stok < totalDibutuhkan) {
-      errorStok = true;
-    }
-  });
+  // Filter barang yang stoknya mencukupi untuk seluruh kantong
+  // Aturan: Satu paket satu macam barang -> 1 pcs barang tersebut per kantong
+  let kandidatBarang = state.items.filter(item => item.stok >= jumlahKantong);
 
-  if(errorStok) {
-    return showToast('Stok barang di keranjang tidak mencukupi untuk jumlah kantong tersebut!', true);
+  if(kandidatBarang.length === 0) {
+    return showToast('Tidak ada barang dengan stok yang mencukupi untuk jumlah kantong tersebut!', true);
   }
 
-  // Kurangi stok barang secara otomatis
-  state.activePackageItems.forEach(row => {
-    const totalDibutuhkan = row.qty * jumlahKantong;
-    const itemKeranjang = state.items.find(i => i.id === row.id);
-    if(itemKeranjang) itemKeranjang.stok -= totalDibutuhkan;
-
-    if(itemKeranjang) {
-      const itemGudang = state.gudang.find(i => i.nama.toLowerCase() === itemKeranjang.nama.toLowerCase());
-      if(itemGudang) itemGudang.stok -= totalDibutuhkan;
-    }
+  // Cari barang yang harganya paling mendekati target budget (bisa di bawah atau paling mendekati)
+  // Urutkan berdasarkan selisih terdekat dengan target budget
+  kandidatBarang.sort((a, b) => {
+    let selisihA = Math.abs(a.hargaPcs - targetBudget);
+    let selisihB = Math.abs(b.hargaPcs - targetBudget);
+    return selisihA - selisihB;
   });
 
-  // Simpan data paket baru
+  const barangTerpilih = kandidatBarang[0];
+  const totalDibutuhkan = jumlahKantong; // karena 1 item per kantong
+
+  // Kurangi stok barang secara otomatis
+  barangTerpilih.stok -= totalDibutuhkan;
+  const itemGudang = state.gudang.find(g => g.nama.toLowerCase() === barangTerpilih.nama.toLowerCase());
+  if(itemGudang) {
+    itemGudang.stok -= totalDibutuhkan;
+  }
+
+  // Simpan paket baru dengan format isi otomatis
   const newPackage = {
     id: Date.now(),
     nama: nama,
-    budget: budget,
+    budget: targetBudget,
     jumlahKantong: jumlahKantong,
-    items: [...state.activePackageItems]
+    items: [
+      { id: barangTerpilih.id, qty: 1 }
+    ]
   };
 
   state.packages.push(newPackage);
-  
-  // Reset form paket
+
+  // Reset form
   namaPaketInput.value = '';
   budgetInput.value = '';
   jumlahPaketInput.value = '1';
-  state.activePackageItems = [];
 
   saveData();
   refreshAllUI();
-  showToast('Paket berhasil disimpan & stok otomatis terpotong!');
+  showToast(`Paket berhasil dibuat dengan isi: ${barangTerpilih.nama}!`);
   switchTab(2);
 }
 
@@ -447,7 +362,7 @@ function renderPaket() {
       <div class="card p-8 text-center text-slate-400 text-sm">
         <i data-lucide="gift" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
         <div>Belum ada paket</div>
-        <div class="text-xs mt-1">Racik paket di form atas</div>
+        <div class="text-xs mt-1">Buat paket otomatis di form atas</div>
       </div>`;
     if(badge) badge.classList.add('hidden');
     return;
@@ -485,12 +400,12 @@ function renderPaket() {
           <ul class="pl-2 space-y-0.5">${rincianItems}</ul>
         </div>
         <div class="text-xs text-right text-slate-500 font-500">
-          Total Modal/Paket: <span class="text-merah-600 font-700">Rp ${Math.round(totalModalPerPaket).toLocaleString('id-ID')}</span>
+          Modal per Kantong: <span class="text-merah-600 font-700">Rp ${Math.round(totalModalPerPaket).toLocaleString('id-ID')}</span>
         </div>
       </div>`;
   });
 
-  container.innerHTML = html;
+    container.innerHTML = html;
 }
 
 // --- FUNGSI LAPORAN & EKSPOR PDF ---
@@ -629,7 +544,6 @@ function resetData() {
     state.gudang = [];
     state.items = [];
     state.packages = [];
-    state.activePackageItems = [];
     saveData();
     refreshAllUI();
     showToast('Semua data berhasil direset.');
@@ -640,9 +554,6 @@ function refreshAllUI() {
   renderGudang();
   renderKeranjang();
   renderPaket();
-  if(document.getElementById('panel-2')?.classList.contains('active')) {
-    renderItemSelector();
-  }
   renderLaporan();
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
