@@ -5,8 +5,6 @@ body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
 .btn-primary:active { background: #b91c1c; transform: scale(0.97); }
 .btn-danger { background: #fef2f2; color: #dc2626; border-radius: 8px; transition: all 0.15s; }
 .btn-danger:active { background: #fee2e2; }
-.btn-success { background: #f0fdf4; color: #16a34a; border-radius: 8px; font-weight: 600; transition: all 0.15s; }
-.btn-success:active { background: #dcfce7; }
 .btn-sm { background: #f1f5f9; color: #475569; border-radius: 8px; transition: all 0.15s; }
 .btn-sm:active { background: #e2e8f0; }
 input, select { outline: none; transition: border-color 0.15s, box-shadow 0.15s; }

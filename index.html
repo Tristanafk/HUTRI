@@ -61,11 +61,11 @@ tailwind.config = {
 </div>
 
 <!-- HEADER -->
-<div class="header-stripe px-4 pt-10 pb-6">
+<div class="header-stripe px-4 pt-6 pb-6">
   <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-      <i data-lucide="gift" class="w-5 h-5 text-white"></i>
-    </div>
+    <!-- LOGO DI SUDUT KIRI ATAS -->
+    <img src="logo_nb.png" alt="Logo" class="w-10 h-10 rounded-xl object-cover bg-white/20 p-1">
+    
     <div>
       <div class="text-white/70 text-xs font-medium">Panitia Lomba 17-an</div>
       <h1 class="text-white text-lg font-bold leading-tight">Kalkulator Paket Hadiah</h1>
@@ -346,22 +346,23 @@ tailwind.config = {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // Daftarkan ke window agar bisa diakses script.js
+  // Daftarkan ke window agar terbaca script.js
   window.db = db;
+  window.firebaseModules = { doc, setDoc, getDoc };
   window.firebaseAuth = { auth, signInWithEmailAndPassword, signOut };
   
-  // Pantau status login pengguna secara real-time
   onAuthStateChanged(auth, (user) => {
     const loginScreen = document.getElementById('login-screen');
+    const btnLogout = document.getElementById('btn-logout');
     if (user) {
-      // Jika sudah login, sembunyikan layar login & ambil data cloud
       if (loginScreen) loginScreen.classList.add('hidden');
+      if (btnLogout) btnLogout.classList.remove('hidden');
       if (typeof window.initAppFromCloud === 'function') {
         window.initAppFromCloud();
       }
     } else {
-      // Jika belum login, tampilkan layar login
       if (loginScreen) loginScreen.classList.remove('hidden');
+      if (btnLogout) btnLogout.classList.add('hidden');
     }
   });
 </script>
