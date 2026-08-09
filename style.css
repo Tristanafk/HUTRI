@@ -1,0 +1,27 @@
+* { -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+.card { background: #fff; border-radius: 16px; box-shadow: 0 1px 6px rgba(15,23,42,0.07); }
+.btn-primary { background: #dc2626; color: #fff; border-radius: 10px; font-weight: 600; transition: all 0.15s; }
+.btn-primary:active { background: #b91c1c; transform: scale(0.97); }
+.btn-danger { background: #fef2f2; color: #dc2626; border-radius: 8px; transition: all 0.15s; }
+.btn-danger:active { background: #fee2e2; }
+.btn-success { background: #f0fdf4; color: #16a34a; border-radius: 8px; font-weight: 600; transition: all 0.15s; }
+.btn-success:active { background: #dcfce7; }
+.btn-sm { background: #f1f5f9; color: #475569; border-radius: 8px; transition: all 0.15s; }
+.btn-sm:active { background: #e2e8f0; }
+input, select { outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+input:focus, select:focus { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+.status-ok { color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; }
+.status-over { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #fff; border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 12px rgba(15,23,42,0.08); }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0; flex: 1; cursor: pointer; color: #94a3b8; font-size: 11px; font-weight: 500; }
+.nav-item.active { color: #dc2626; }
+.nav-item svg { width: 22px; height: 22px; }
+.toggle-type { display: flex; background: #f1f5f9; border-radius: 10px; padding: 3px; gap: 3px; }
+.toggle-type button { flex: 1; padding: 7px 0; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748b; }
+.toggle-type button.active { background: #dc2626; color: #fff; }
+.badge-count { background: #dc2626; color: #fff; border-radius: 99px; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+.header-stripe { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 8px; }

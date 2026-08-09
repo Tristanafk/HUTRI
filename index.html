@@ -24,50 +24,41 @@ tailwind.config = {
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<style>
-  * { -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
-  .tab-btn { transition: all 0.2s; }
-  .tab-btn.active { background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(220,38,38,0.25); }
-  .tab-btn:not(.active) { background: #fff; color: #475569; }
-  .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 6px rgba(15,23,42,0.07); }
-  .btn-primary { background: #dc2626; color: #fff; border-radius: 10px; font-weight: 600; transition: all 0.15s; }
-  .btn-primary:active { background: #b91c1c; transform: scale(0.97); }
-  .btn-outline { border: 1.5px solid #dc2626; color: #dc2626; border-radius: 10px; font-weight: 600; transition: all 0.15s; background: #fff; }
-  .btn-outline:active { background: #fff1f2; transform: scale(0.97); }
-  .btn-danger { background: #fef2f2; color: #dc2626; border-radius: 8px; transition: all 0.15s; }
-  .btn-danger:active { background: #fee2e2; }
-  .btn-sm { background: #f1f5f9; color: #475569; border-radius: 8px; transition: all 0.15s; }
-  .btn-sm:active { background: #e2e8f0; }
-  input, select { outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-  input:focus, select:focus { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
-  .status-ok { color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; }
-  .status-over { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; }
-  .status-neutral { color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; }
-  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-  .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #fff; border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 12px rgba(15,23,42,0.08); }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0; flex: 1; cursor: pointer; transition: color 0.15s; color: #94a3b8; font-size: 11px; font-weight: 500; }
-  .nav-item.active { color: #dc2626; }
-  .nav-item svg { width: 22px; height: 22px; }
-  .toggle-type { display: flex; background: #f1f5f9; border-radius: 10px; padding: 3px; gap: 3px; }
-  .toggle-type button { flex: 1; padding: 7px 0; border-radius: 8px; font-size: 13px; font-weight: 600; transition: all 0.15s; color: #64748b; }
-  .toggle-type button.active { background: #dc2626; color: #fff; }
-  .badge-count { background: #dc2626; color: #fff; border-radius: 99px; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-  .header-stripe { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
-  .item-row { border-bottom: 1px solid #f1f5f9; }
-  .item-row:last-child { border-bottom: none; }
-  .qty-ctrl { display: flex; align-items: center; gap: 6px; }
-  .qty-btn { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all 0.15s; }
-  select option { font-size: 14px; }
-  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 8px; }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen pb-24">
+
+<!-- HALAMAN LOGIN FIREBASE -->
+<div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
+  <div class="card p-6 w-full max-w-sm text-center space-y-4 bg-white rounded-2xl shadow-xl">
+    <div class="w-12 h-12 rounded-2xl bg-merah-50 flex items-center justify-center mx-auto text-merah-600">
+      <i data-lucide="lock" class="w-6 h-6"></i>
+    </div>
+    <div>
+      <h2 class="text-lg font-bold text-slate-800">Login Panitia 17-an</h2>
+      <p class="text-xs text-slate-500 mt-1">Masukkan akun panitia yang terdaftar.</p>
+    </div>
+    
+    <div class="space-y-3 text-left">
+      <div>
+        <label class="block text-xs font-600 text-slate-500 mb-1">Email</label>
+        <input id="input-email" type="email" placeholder="panitia@hutri.com" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-slate-50" />
+      </div>
+      <div>
+        <label class="block text-xs font-600 text-slate-500 mb-1">Password</label>
+        <input id="input-password" type="password" placeholder="••••••••" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-slate-50" />
+      </div>
+    </div>
+
+    <button onclick="handleLogin()" class="btn-primary w-full py-3 flex items-center justify-center gap-2 text-sm font-600 mt-2">
+      <i data-lucide="log-in" class="w-4 h-4"></i>
+      <span>Masuk</span>
+    </button>
+    <div class="text-right">
+      <button onclick="handleLogout()" id="btn-logout" class="text-xs text-slate-400 hover:text-merah-600 hidden">Keluar Akun</button>
+    </div>
+  </div>
+</div>
 
 <!-- HEADER -->
 <div class="header-stripe px-4 pt-10 pb-6">
@@ -87,31 +78,22 @@ tailwind.config = {
 
   <!-- ===== TAB 1: INVENTORI ===== -->
   <div id="panel-1" class="tab-panel active space-y-4">
+    <div class="section-label px-1">Tambah Barang ke Daftar Belanja</div>
 
-    <div class="section-label px-1">Tambah Barang ke Stok</div>
-
-    <!-- Form Card -->
     <div class="card p-4 space-y-3">
-      <!-- Toggle Satuan/Pak -->
       <div>
         <div class="section-label">Tipe Produk</div>
         <div class="toggle-type">
-          <button id="btn-type-satuan" class="active" onclick="setType('satuan')">
-            <span>Satuan / Pcs</span>
-          </button>
-          <button id="btn-type-pak" onclick="setType('pak')">
-            <span>Pak / Dus</span>
-          </button>
+          <button id="btn-type-satuan" class="active" onclick="setType('satuan')"><span>Satuan / Pcs</span></button>
+          <button id="btn-type-pak" onclick="setType('pak')"><span>Pak / Dus</span></button>
         </div>
       </div>
 
-      <!-- Nama Barang -->
       <div>
         <label class="block text-xs font-600 text-slate-500 mb-1">Nama Barang</label>
         <input id="input-nama" type="text" placeholder="Contoh: Biskuit Krim, Minuman Gelas..." class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-slate-50" />
       </div>
 
-      <!-- Satuan Fields -->
       <div id="fields-satuan" class="space-y-3">
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -125,7 +107,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Pak/Dus Fields -->
       <div id="fields-pak" class="space-y-3 hidden">
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -141,56 +122,61 @@ tailwind.config = {
           <label class="block text-xs font-600 text-slate-500 mb-1">Jumlah Beli (Pak)</label>
           <input id="input-qty-pak" type="number" placeholder="1" min="1" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-slate-50" />
         </div>
-        <!-- Preview kalkulasi -->
-        <div id="preview-pak" class="hidden bg-merah-50 border border-red-100 rounded-xl p-3 text-xs text-slate-600 space-y-1">
-          <div class="flex justify-between"><span>Total Stok Fisik:</span><span id="prev-stok" class="font-700 text-slate-800"></span></div>
-          <div class="flex justify-between"><span>Harga per Pcs:</span><span id="prev-harga" class="font-700 text-slate-800"></span></div>
-          <div class="flex justify-between"><span>Total Pengeluaran:</span><span id="prev-total" class="font-700 text-merah-700"></span></div>
-        </div>
       </div>
 
       <button onclick="tambahBarang()" class="btn-primary w-full py-3 flex items-center justify-center gap-2 mt-1">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span>Tambah ke Keranjang</span>
+        <span>Tambah ke Daftar Belanja</span>
       </button>
     </div>
 
-    <!-- Keranjang List -->
+    <!-- DAFTAR BELANJA / GUDANG UTAMA -->
     <div>
       <div class="flex items-center justify-between px-1 mb-2">
-        <div class="section-label mb-0">Keranjang Stok</div>
-        <span id="badge-keranjang" class="badge-count hidden">0</span>
+        <div class="section-label mb-0">Daftar Belanja Gudang</div>
+        <span id="badge-gudang" class="badge-count hidden">0</span>
       </div>
-      <div id="list-keranjang" class="card divide-y divide-slate-50">
-        <div class="p-8 text-center text-slate-400 text-sm" id="empty-keranjang">
+      <div id="list-gudang" class="card divide-y divide-slate-50 mb-6">
+        <div class="p-8 text-center text-slate-400 text-sm" id="empty-gudang">
           <i data-lucide="shopping-basket" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-          <div>Keranjang masih kosong</div>
+          <div>Belanjaan masih kosong</div>
           <div class="text-xs mt-1">Tambahkan barang di form atas</div>
         </div>
       </div>
     </div>
 
-    <!-- Total Belanja -->
+    <!-- STOK SIAP PAKAI (KERANGKANG / SIAP DIRACIK) -->
+    <div>
+      <div class="flex items-center justify-between px-1 mb-2">
+        <div class="section-label mb-0">Stok Siap Diracik (Keranjang Paket)</div>
+        <span id="badge-keranjang" class="badge-count hidden">0</span>
+      </div>
+      <div id="list-keranjang" class="card divide-y divide-slate-50">
+        <div class="p-8 text-center text-slate-400 text-sm" id="empty-keranjang">
+          <i data-lucide="package-check" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+          <div>Belum ada barang siap pakai</div>
+          <div class="text-xs mt-1">Pindahkan barang dari daftar belanja di atas</div>
+        </div>
+      </div>
+    </div>
+
     <div id="card-total-belanja" class="card p-4 hidden">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-merah-50 flex items-center justify-center">
           <i data-lucide="wallet" class="w-5 h-5 text-merah-600"></i>
         </div>
         <div>
-          <div class="text-xs text-slate-500 font-500">Estimasi Total Belanja</div>
+          <div class="text-xs text-slate-500 font-500">Total Estimasi Belanja Gudang</div>
           <div id="total-belanja-nominal" class="text-xl font-800 text-merah-700">Rp 0</div>
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- ===== TAB 2: PAKET ===== -->
   <div id="panel-2" class="tab-panel space-y-4">
-
     <div class="section-label px-1">Buat Paket Hadiah</div>
 
-    <!-- Form Paket -->
     <div class="card p-4 space-y-3">
       <div>
         <label class="block text-xs font-600 text-slate-500 mb-1">Nama Kategori Paket</label>
@@ -207,19 +193,15 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item Selector -->
       <div>
         <div class="section-label mb-2">Isi Paket</div>
-        <div id="item-selector-container" class="space-y-2">
-          <!-- dinamis -->
-        </div>
+        <div id="item-selector-container" class="space-y-2"></div>
         <button onclick="tambahBarisPaket()" class="btn-sm w-full py-2.5 mt-2 flex items-center justify-center gap-2 text-sm font-600">
           <i data-lucide="plus" class="w-4 h-4"></i>
           <span>Tambah Barang</span>
         </button>
       </div>
 
-      <!-- Status Budget -->
       <div id="status-budget" class="rounded-xl p-3 hidden">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -236,7 +218,6 @@ tailwind.config = {
       </button>
     </div>
 
-    <!-- Daftar Paket -->
     <div>
       <div class="flex items-center justify-between px-1 mb-2">
         <div class="section-label mb-0">Paket Tersimpan</div>
@@ -250,15 +231,12 @@ tailwind.config = {
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- ===== TAB 3: LAPORAN ===== -->
   <div id="panel-3" class="tab-panel space-y-4">
-
     <div class="section-label px-1">Ekspor Laporan</div>
 
-    <!-- Ringkasan Status -->
     <div class="card p-4">
       <div class="section-label mb-3">Ringkasan Data</div>
       <div class="grid grid-cols-3 gap-2">
@@ -277,7 +255,6 @@ tailwind.config = {
       </div>
     </div>
 
-    <!-- Daftar Belanja Global -->
     <div class="card p-4">
       <div class="flex items-start gap-3 mb-3">
         <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
@@ -297,7 +274,6 @@ tailwind.config = {
       </button>
     </div>
 
-    <!-- Panduan Tim Bungkus -->
     <div class="card p-4">
       <div class="flex items-start gap-3 mb-3">
         <div class="w-10 h-10 rounded-xl bg-merah-50 flex items-center justify-center flex-shrink-0">
@@ -317,14 +293,12 @@ tailwind.config = {
       </button>
     </div>
 
-    <!-- Reset Data -->
     <div class="card p-4">
       <button onclick="resetData()" class="btn-danger w-full py-3 flex items-center justify-center gap-2 font-600 text-sm">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
         <span>Reset Semua Data</span>
       </button>
     </div>
-
   </div>
 </div>
 
@@ -332,7 +306,7 @@ tailwind.config = {
 <nav class="nav-bar">
   <div class="flex">
     <div class="nav-item active" id="nav-1" onclick="switchTab(1)">
-      <i data-lucide="shopping-basket" ></i>
+      <i data-lucide="shopping-basket"></i>
       <span>Stok</span>
     </div>
     <div class="nav-item" id="nav-2" onclick="switchTab(2)">
@@ -352,606 +326,47 @@ tailwind.config = {
   <span id="toast-msg"></span>
 </div>
 
-<script>
-// =============================================
-// STATE
-// =============================================
-let keranjang = []; // { id, nama, tipe, hargaPcs, totalPcs, totalHarga, pakInfo? }
-let paketList = []; // { id, nama, budget, jumlahPaket, items: [{itemId, qty}] }
-let currentType = 'satuan';
-let paketItems = []; // [{rowId, itemId, qty}] - item rows in form
+<!-- SCRIPT INISIALISASI FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-let nextId = 1;
-let nextRowId = 1;
-
-// =============================================
-// TABS
-// =============================================
-function switchTab(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById('panel-'+i).classList.toggle('active', i===n);
-    document.getElementById('nav-'+i).classList.toggle('active', i===n);
-  });
-  if(n===3) updateLaporan();
-  lucide.createIcons();
-}
-
-// =============================================
-// TIPE PRODUK TOGGLE
-// =============================================
-function setType(t) {
-  currentType = t;
-  document.getElementById('btn-type-satuan').classList.toggle('active', t==='satuan');
-  document.getElementById('btn-type-pak').classList.toggle('active', t==='pak');
-  document.getElementById('fields-satuan').classList.toggle('hidden', t!=='satuan');
-  document.getElementById('fields-pak').classList.toggle('hidden', t!=='pak');
-  if(t==='pak') attachPakListeners();
-}
-
-function attachPakListeners() {
-  ['input-harga-pak','input-isi-pak','input-qty-pak'].forEach(id => {
-    const el = document.getElementById(id);
-    el.oninput = updatePakPreview;
-  });
-}
-
-function updatePakPreview() {
-  const h = parseFloat(document.getElementById('input-harga-pak').value)||0;
-  const isi = parseFloat(document.getElementById('input-isi-pak').value)||0;
-  const q = parseFloat(document.getElementById('input-qty-pak').value)||0;
-  const prev = document.getElementById('preview-pak');
-  if(h>0 && isi>0 && q>0) {
-    prev.classList.remove('hidden');
-    document.getElementById('prev-stok').textContent = (isi*q)+' pcs';
-    document.getElementById('prev-harga').textContent = formatRp(h/isi)+'/pcs';
-    document.getElementById('prev-total').textContent = formatRp(h*q);
-  } else {
-    prev.classList.add('hidden');
-  }
-  lucide.createIcons();
-}
-
-// =============================================
-// TAMBAH BARANG
-// =============================================
-function tambahBarang() {
-  const nama = document.getElementById('input-nama').value.trim();
-  if(!nama) { showToast('Nama barang wajib diisi', 'error'); return; }
-
-  let hargaPcs, totalPcs, totalHarga, pakInfo=null;
-
-  if(currentType==='satuan') {
-    hargaPcs = parseFloat(document.getElementById('input-harga-pcs').value)||0;
-    totalPcs = parseInt(document.getElementById('input-qty-pcs').value)||0;
-    if(hargaPcs<=0||totalPcs<=0) { showToast('Isi harga dan jumlah', 'error'); return; }
-    totalHarga = hargaPcs * totalPcs;
-  } else {
-    const hargaPak = parseFloat(document.getElementById('input-harga-pak').value)||0;
-    const isiPak = parseInt(document.getElementById('input-isi-pak').value)||0;
-    const qtyPak = parseInt(document.getElementById('input-qty-pak').value)||0;
-    if(hargaPak<=0||isiPak<=0||qtyPak<=0) { showToast('Isi semua kolom pak', 'error'); return; }
-    hargaPcs = hargaPak / isiPak;
-    totalPcs = isiPak * qtyPak;
-    totalHarga = hargaPak * qtyPak;
-    pakInfo = { hargaPak, isiPak, qtyPak };
-  }
-
-  // Cek apakah nama sudah ada → update stok
-  const existing = keranjang.find(k => k.nama.toLowerCase()===nama.toLowerCase());
-  if(existing) {
-    existing.totalPcs += totalPcs;
-    existing.totalHarga += totalHarga;
-    showToast('Stok '+nama+' diperbarui', 'success');
-  } else {
-    keranjang.push({ id: nextId++, nama, tipe: currentType, hargaPcs, totalPcs, sisaPcs: totalPcs, totalHarga, pakInfo });
-    showToast(nama+' ditambahkan', 'success');
-  }
-
-  // Reset form
-  document.getElementById('input-nama').value = '';
-  document.getElementById('input-harga-pcs').value = '';
-  document.getElementById('input-qty-pcs').value = '';
-  document.getElementById('input-harga-pak').value = '';
-  document.getElementById('input-isi-pak').value = '';
-  document.getElementById('input-qty-pak').value = '';
-  document.getElementById('preview-pak').classList.add('hidden');
-
-  renderKeranjang();
-}
-
-// =============================================
-// RENDER KERANJANG
-// =============================================
-function renderKeranjang() {
-  const cont = document.getElementById('list-keranjang');
-  const empty = document.getElementById('empty-keranjang');
-  const badge = document.getElementById('badge-keranjang');
-  const cardTotal = document.getElementById('card-total-belanja');
-
-  if(keranjang.length===0) {
-    cont.innerHTML = '';
-    cont.appendChild(empty);
-    empty.style.display='';
-    badge.classList.add('hidden');
-    cardTotal.classList.add('hidden');
-    lucide.createIcons();
-    return;
-  }
-
-  badge.textContent = keranjang.length;
-  badge.classList.remove('hidden');
-  cardTotal.classList.remove('hidden');
-
-  const total = keranjang.reduce((s,k)=>s+k.totalHarga, 0);
-  document.getElementById('total-belanja-nominal').textContent = formatRp(total);
-
-  let html = '';
-  keranjang.forEach(item => {
-    const usedPcs = item.totalPcs - item.sisaPcs;
-    const sisaBar = item.totalPcs > 0 ? Math.round((item.sisaPcs/item.totalPcs)*100) : 0;
-    html += `
-    <div class="p-3 item-row" id="krow-${item.id}">
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex-1 min-w-0">
-          <div class="font-700 text-slate-800 text-sm truncate">${item.nama}</div>
-          <div class="text-xs text-slate-400 mt-0.5">${formatRp(item.hargaPcs)}/pcs &bull; Total: ${formatRp(item.totalHarga)}</div>
-          <div class="flex items-center gap-2 mt-1.5">
-            <div class="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full ${item.sisaPcs===0?'bg-slate-300':'bg-merah-500'}" style="width:${sisaBar}%"></div>
-            </div>
-            <span class="text-xs font-600 ${item.sisaPcs===0?'text-slate-400':'text-slate-700'}">${item.sisaPcs}/${item.totalPcs} pcs</span>
-          </div>
-        </div>
-        <button onclick="hapusBarang(${item.id})" class="btn-danger w-8 h-8 flex items-center justify-center flex-shrink-0">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-    </div>`;
-  });
-
-  cont.innerHTML = html;
-  lucide.createIcons();
-}
-
-function hapusBarang(id) {
-  // Cek apakah item ini dipakai di paket
-  const dipakai = paketList.some(p => p.items.some(it => it.itemId===id));
-  if(dipakai) { showToast('Barang dipakai di paket, hapus paketnya dulu', 'error'); return; }
-  keranjang = keranjang.filter(k => k.id!==id);
-  renderKeranjang();
-  showToast('Barang dihapus', 'success');
-}
-
-// =============================================
-// PAKET BUILDER
-// =============================================
-function tambahBarisPaket() {
-  if(keranjang.length===0) { showToast('Tambahkan barang ke stok dulu', 'error'); return; }
-  const rowId = nextRowId++;
-  paketItems.push({ rowId, itemId: null, qty: 1 });
-  renderItemSelector();
-}
-
-function renderItemSelector() {
-  const cont = document.getElementById('item-selector-container');
-  if(paketItems.length===0) { cont.innerHTML=''; updateStatusBudget(); return; }
-
-  let html = '';
-  paketItems.forEach(row => {
-    const opts = keranjang.map(k => `<option value="${k.id}" ${k.id===row.itemId?'selected':''}>${k.nama} (${formatRp(k.hargaPcs)}/pcs)</option>`).join('');
-    html += `
-    <div class="flex items-center gap-2" id="prow-${row.rowId}">
-      <select onchange="updatePaketRow(${row.rowId},'item',this.value)" class="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 bg-slate-50">
-        <option value="">-- Pilih Barang --</option>
-        ${opts}
-      </select>
-      <div class="qty-ctrl">
-        <button onclick="updatePaketRow(${row.rowId},'dec')" class="qty-btn btn-sm text-slate-600">
-          <i data-lucide="minus" class="w-3 h-3"></i>
-        </button>
-        <span id="qty-val-${row.rowId}" class="text-sm font-700 text-slate-800 w-6 text-center">${row.qty}</span>
-        <button onclick="updatePaketRow(${row.rowId},'inc')" class="qty-btn btn-sm text-slate-600">
-          <i data-lucide="plus" class="w-3 h-3"></i>
-        </button>
-      </div>
-      <button onclick="hapusBarisPaket(${row.rowId})" class="btn-danger w-8 h-8 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="x" class="w-3.5 h-3.5"></i>
-      </button>
-    </div>`;
-  });
-  cont.innerHTML = html;
-  lucide.createIcons();
-  updateStatusBudget();
-}
-
-function updatePaketRow(rowId, action, val) {
-  const row = paketItems.find(r => r.rowId===rowId);
-  if(!row) return;
-  if(action==='item') row.itemId = parseInt(val)||null;
-  if(action==='inc') row.qty++;
-  if(action==='dec') row.qty = Math.max(1, row.qty-1);
-  document.getElementById('qty-val-'+rowId) && (document.getElementById('qty-val-'+rowId).textContent = row.qty);
-  updateStatusBudget();
-}
-
-function hapusBarisPaket(rowId) {
-  paketItems = paketItems.filter(r => r.rowId!==rowId);
-  renderItemSelector();
-}
-
-function hitungTotalPaket() {
-  return paketItems.reduce((sum, row) => {
-    if(!row.itemId) return sum;
-    const item = keranjang.find(k => k.id===row.itemId);
-    if(!item) return sum;
-    return sum + item.hargaPcs * row.qty;
-  }, 0);
-}
-
-function updateStatusBudget() {
-  const budget = parseFloat(document.getElementById('input-budget').value)||0;
-  const total = hitungTotalPaket();
-  const statusEl = document.getElementById('status-budget');
-  const iconEl = document.getElementById('status-icon');
-  const textEl = document.getElementById('status-text');
-  const selisihEl = document.getElementById('status-selisih');
-
-  if(paketItems.length===0 || budget===0) {
-    statusEl.classList.add('hidden');
-    return;
-  }
-
-  statusEl.classList.remove('hidden','status-ok','status-over','status-neutral');
-
-  if(total <= budget) {
-    statusEl.classList.add('status-ok');
-    iconEl.setAttribute('data-lucide', 'check-circle');
-    textEl.textContent = total===budget ? 'Tepat budget!' : 'Di bawah budget';
-    selisihEl.textContent = budget===total ? '' : 'Sisa '+formatRp(budget-total);
-  } else {
-    statusEl.classList.add('status-over');
-    iconEl.setAttribute('data-lucide', 'alert-circle');
-    textEl.textContent = 'Melebihi budget!';
-    selisihEl.textContent = 'Lebih '+formatRp(total-budget);
-  }
-  textEl.innerHTML = textEl.innerHTML + ' &mdash; Total: <strong>'+formatRp(total)+'</strong>';
-  lucide.createIcons();
-}
-
-function simpanPaket() {
-  const nama = document.getElementById('input-nama-paket').value.trim();
-  const budget = parseFloat(document.getElementById('input-budget').value)||0;
-  const jumlahPaket = parseInt(document.getElementById('input-jumlah-paket').value)||1;
-
-  if(!nama) { showToast('Nama paket wajib diisi', 'error'); return; }
-  const validItems = paketItems.filter(r => r.itemId && r.qty>0);
-  if(validItems.length===0) { showToast('Tambahkan isi paket dulu', 'error'); return; }
-
-  // Cek stok tersedia
-  const grouped = {};
-  for(const row of validItems) {
-    grouped[row.itemId] = (grouped[row.itemId]||0) + row.qty * jumlahPaket;
-  }
-  for(const [id, needed] of Object.entries(grouped)) {
-    const item = keranjang.find(k => k.id===parseInt(id));
-    if(!item) continue;
-    if(needed > item.sisaPcs) {
-      showToast('Stok '+item.nama+' tidak cukup! Butuh '+needed+', sisa '+item.sisaPcs, 'error');
-      return;
-    }
-  }
-
-  // Kurangi sisa stok
-  for(const [id, needed] of Object.entries(grouped)) {
-    const item = keranjang.find(k => k.id===parseInt(id));
-    if(item) item.sisaPcs -= needed;
-  }
-
-  const paket = {
-    id: nextId++,
-    nama, budget, jumlahPaket,
-    items: validItems.map(r => ({ itemId: r.itemId, qty: r.qty }))
+  const firebaseConfig = {
+    apiKey: "AIzaSyB7o-XSt9MgdaU0hum4TNanlrmQphDtdxg",
+    authDomain: "hutri-6dd3d.firebaseapp.com",
+    projectId: "hutri-6dd3d",
+    storageBucket: "hutri-6dd3d.firebasestorage.app",
+    messagingSenderId: "291798183126",
+    appId: "1:291798183126:web:781a74c504268cacc5ed77",
+    measurementId: "G-J367Y5B2CF"
   };
-  paketList.push(paket);
 
-  // Reset form
-  document.getElementById('input-nama-paket').value = '';
-  document.getElementById('input-budget').value = '';
-  document.getElementById('input-jumlah-paket').value = '1';
-  paketItems = [];
-  renderItemSelector();
-  document.getElementById('status-budget').classList.add('hidden');
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-  renderPaketList();
-  renderKeranjang();
-  showToast('Paket "'+nama+'" disimpan!', 'success');
-}
-
-function renderPaketList() {
-  const cont = document.getElementById('list-paket');
-  const empty = document.getElementById('empty-paket');
-  const badge = document.getElementById('badge-paket');
-
-  if(paketList.length===0) {
-    cont.innerHTML='';
-    cont.appendChild(empty);
-    empty.style.display='';
-    badge.classList.add('hidden');
-    lucide.createIcons();
-    return;
-  }
-
-  badge.textContent = paketList.length;
-  badge.classList.remove('hidden');
-
-  let html = '';
-  paketList.forEach(p => {
-    const total = p.items.reduce((s,it) => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      return s + (item ? item.hargaPcs * it.qty : 0);
-    }, 0);
-    const isOver = p.budget > 0 && total > p.budget;
-    const isiHtml = p.items.map(it => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      return item ? `<span class="pill bg-slate-100 text-slate-600">${it.qty}x ${item.nama}</span>` : '';
-    }).join('');
-
-    html += `
-    <div class="card p-4">
-      <div class="flex items-start justify-between gap-2 mb-2">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <div class="font-700 text-slate-800">${p.nama}</div>
-            <span class="pill ${isOver?'status-over':'status-ok'}">${isOver?'Over':'Oke'}</span>
-          </div>
-          <div class="text-xs text-slate-400 mt-0.5">${p.jumlahPaket} kantong &bull; Budget ${formatRp(p.budget)} &bull; Aktual <strong>${formatRp(total)}</strong>/kantong</div>
-        </div>
-        <button onclick="hapusPaket(${p.id})" class="btn-danger w-8 h-8 flex items-center justify-center flex-shrink-0">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-      <div class="flex flex-wrap gap-1.5 mt-2">${isiHtml}</div>
-    </div>`;
+  // Daftarkan ke window agar bisa diakses script.js
+  window.db = db;
+  window.firebaseAuth = { auth, signInWithEmailAndPassword, signOut };
+  
+  // Pantau status login pengguna secara real-time
+  onAuthStateChanged(auth, (user) => {
+    const loginScreen = document.getElementById('login-screen');
+    if (user) {
+      // Jika sudah login, sembunyikan layar login & ambil data cloud
+      if (loginScreen) loginScreen.classList.add('hidden');
+      if (typeof window.initAppFromCloud === 'function') {
+        window.initAppFromCloud();
+      }
+    } else {
+      // Jika belum login, tampilkan layar login
+      if (loginScreen) loginScreen.classList.remove('hidden');
+    }
   });
-  cont.innerHTML = html;
-  lucide.createIcons();
-}
-
-function hapusPaket(id) {
-  const p = paketList.find(x => x.id===id);
-  if(!p) return;
-  // Kembalikan stok
-  p.items.forEach(it => {
-    const item = keranjang.find(k => k.id===it.itemId);
-    if(item) item.sisaPcs += it.qty * p.jumlahPaket;
-  });
-  paketList = paketList.filter(x => x.id!==id);
-  renderPaketList();
-  renderKeranjang();
-  showToast('Paket dihapus, stok dikembalikan', 'success');
-}
-
-// =============================================
-// LAPORAN
-// =============================================
-function updateLaporan() {
-  document.getElementById('sum-items').textContent = keranjang.length;
-  document.getElementById('sum-paket').textContent = paketList.length;
-  const totalKantong = paketList.reduce((s,p) => s+p.jumlahPaket, 0);
-  document.getElementById('sum-total-paket').textContent = totalKantong;
-
-  // Preview belanja global
-  const globalMap = {};
-  paketList.forEach(p => {
-    p.items.forEach(it => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      if(!item) return;
-      if(!globalMap[item.nama]) globalMap[item.nama] = { hargaPcs: item.hargaPcs, totalPcs: 0 };
-      globalMap[item.nama].totalPcs += it.qty * p.jumlahPaket;
-    });
-  });
-
-  const bPrev = document.getElementById('preview-belanja');
-  const bBungkus = document.getElementById('preview-bungkus');
-
-  if(Object.keys(globalMap).length===0) {
-    bPrev.innerHTML = '<div class="text-slate-400 italic">Simpan paket untuk melihat rekap...</div>';
-    bBungkus.innerHTML = '<div class="text-slate-400 italic">Simpan paket untuk melihat panduan...</div>';
-    return;
-  }
-
-  let prevHtml = '<div class="space-y-1">';
-  let totalBelanja = 0;
-  Object.entries(globalMap).forEach(([nama, d]) => {
-    const t = d.hargaPcs * d.totalPcs;
-    totalBelanja += t;
-    prevHtml += `<div class="flex justify-between"><span>${nama} &times; ${d.totalPcs} pcs</span><span class="font-600">${formatRp(t)}</span></div>`;
-  });
-  prevHtml += `<div class="border-t border-slate-200 mt-2 pt-2 flex justify-between font-700 text-slate-800"><span>Total</span><span class="text-merah-700">${formatRp(totalBelanja)}</span></div>`;
-  prevHtml += '</div>';
-  bPrev.innerHTML = prevHtml;
-
-  let bungkusHtml = '<div class="space-y-2">';
-  paketList.forEach(p => {
-    bungkusHtml += `<div class="font-700 text-slate-700">${p.nama} (${p.jumlahPaket} kantong):</div>`;
-    p.items.forEach(it => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      if(item) bungkusHtml += `<div class="ml-3 text-slate-600">&bull; ${it.qty}x ${item.nama}</div>`;
-    });
-  });
-  bungkusHtml += '</div>';
-  bBungkus.innerHTML = bungkusHtml;
-  lucide.createIcons();
-}
-
-function cetakBelanjaGlobal() {
-  if(paketList.length===0) { showToast('Belum ada paket tersimpan', 'error'); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-
-  // Header
-  doc.setFillColor(220,38,38);
-  doc.rect(0,0,210,28,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(16);
-  doc.setFont('helvetica','bold');
-  doc.text('DAFTAR BELANJA GLOBAL - 17-AN', 14, 12);
-  doc.setFontSize(9);
-  doc.setFont('helvetica','normal');
-  doc.text('Dicetak: '+new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}), 14, 22);
-
-  // Build global map
-  const globalMap = {};
-  paketList.forEach(p => {
-    p.items.forEach(it => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      if(!item) return;
-      if(!globalMap[item.nama]) globalMap[item.nama] = { hargaPcs: item.hargaPcs, totalPcs: 0 };
-      globalMap[item.nama].totalPcs += it.qty * p.jumlahPaket;
-    });
-  });
-
-  const rows = Object.entries(globalMap).map(([nama, d], i) => [
-    i+1,
-    nama,
-    d.totalPcs+' pcs',
-    formatRp(d.hargaPcs),
-    formatRp(d.hargaPcs * d.totalPcs)
-  ]);
-
-  const totalAll = Object.values(globalMap).reduce((s,d) => s + d.hargaPcs*d.totalPcs, 0);
-
-  doc.autoTable({
-    head: [['No','Nama Barang','Total Pcs','Harga/Pcs','Subtotal']],
-    body: rows,
-    foot: [['','','','TOTAL',formatRp(totalAll)]],
-    startY: 35,
-    styles: { fontSize: 10, cellPadding: 3 },
-    headStyles: { fillColor: [220,38,38], textColor: 255, fontStyle:'bold' },
-    footStyles: { fillColor: [241,245,249], textColor: [30,41,59], fontStyle:'bold' },
-    alternateRowStyles: { fillColor: [248,250,252] },
-    columnStyles: { 0:{cellWidth:10}, 4:{halign:'right'}, 3:{halign:'right'} }
-  });
-
-  doc.save('daftar-belanja-17an.pdf');
-  showToast('PDF daftar belanja didownload!', 'success');
-}
-
-function cetakPanduanBungkus() {
-  if(paketList.length===0) { showToast('Belum ada paket tersimpan', 'error'); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-
-  doc.setFillColor(220,38,38);
-  doc.rect(0,0,210,28,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(16);
-  doc.setFont('helvetica','bold');
-  doc.text('PANDUAN TIM BUNGKUS HADIAH - 17-AN', 14, 12);
-  doc.setFontSize(9);
-  doc.setFont('helvetica','normal');
-  doc.text('Dicetak: '+new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}), 14, 22);
-
-  let y = 35;
-  paketList.forEach((p, idx) => {
-    const total = p.items.reduce((s,it) => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      return s + (item ? item.hargaPcs * it.qty : 0);
-    }, 0);
-
-    if(y > 250) { doc.addPage(); y = 15; }
-
-    // Paket header
-    doc.setFillColor(248,250,252);
-    doc.rect(10, y, 190, 9, 'F');
-    doc.setTextColor(30,41,59);
-    doc.setFontSize(11);
-    doc.setFont('helvetica','bold');
-    doc.text(`${idx+1}. ${p.nama}`, 14, y+6.5);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(100,116,139);
-    doc.text(`${p.jumlahPaket} kantong  |  Budget: ${formatRp(p.budget)}  |  Aktual: ${formatRp(total)}/kantong`, 130, y+6.5);
-    y += 12;
-
-    const rows = p.items.map((it,i) => {
-      const item = keranjang.find(k => k.id===it.itemId);
-      return [i+1, item ? item.nama : '-', it.qty+' pcs', item ? formatRp(item.hargaPcs) : '-', item ? formatRp(item.hargaPcs*it.qty) : '-'];
-    });
-
-    doc.autoTable({
-      head: [['#','Nama Barang','Qty','Harga/Pcs','Subtotal']],
-      body: rows,
-      foot: [['','','','Total',formatRp(total)]],
-      startY: y,
-      styles: { fontSize: 9, cellPadding: 2.5 },
-      headStyles: { fillColor: [30,41,59], textColor: 255 },
-      footStyles: { fillColor: [220,38,38], textColor: 255, fontStyle:'bold' },
-      alternateRowStyles: { fillColor: [248,250,252] },
-      columnStyles: { 0:{cellWidth:8}, 4:{halign:'right'}, 3:{halign:'right'} },
-      margin: { left: 10, right: 10 }
-    });
-
-    y = doc.lastAutoTable.finalY + 8;
-  });
-
-  doc.save('panduan-bungkus-17an.pdf');
-  showToast('PDF panduan bungkus didownload!', 'success');
-}
-
-// =============================================
-// RESET
-// =============================================
-function resetData() {
-  if(!confirm('Reset semua data stok dan paket? Tindakan ini tidak bisa dibatalkan.')) return;
-  keranjang = [];
-  paketList = [];
-  paketItems = [];
-  nextId = 1;
-  nextRowId = 1;
-  renderKeranjang();
-  renderPaketList();
-  renderItemSelector();
-  updateLaporan();
-  showToast('Semua data direset', 'success');
-}
-
-// =============================================
-// UTILS
-// =============================================
-function formatRp(n) {
-  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
-}
-
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  const icon = document.getElementById('toast-icon');
-  const msgEl = document.getElementById('toast-msg');
-  msgEl.textContent = msg;
-  t.className = t.className.replace(/bg-\S+/g,'');
-  if(type==='success') {
-    t.classList.add('bg-slate-800');
-    icon.setAttribute('data-lucide','check-circle');
-  } else {
-    t.classList.add('bg-merah-700');
-    icon.setAttribute('data-lucide','alert-circle');
-  }
-  lucide.createIcons();
-  t.style.opacity='1';
-  t.style.transform='translateX(-50%) translateY(0)';
-  setTimeout(()=>{
-    t.style.opacity='0';
-    t.style.transform='translateX(-50%) translateY(-8px)';
-  }, 2800);
-}
-
-// Budget input listener
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('input-budget').addEventListener('input', updateStatusBudget);
-  lucide.createIcons();
-  renderKeranjang();
-  renderPaketList();
-});
 </script>
+
+<!-- SCRIPT UTAMA APLIKASI -->
+<script src="script.js"></script>
 </body>
 </html>
